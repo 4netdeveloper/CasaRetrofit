@@ -1,0 +1,2 @@
+rootProject.name='CasaRetrofit'
+include ':app'
