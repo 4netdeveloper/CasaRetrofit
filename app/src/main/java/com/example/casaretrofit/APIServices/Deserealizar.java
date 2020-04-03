@@ -1,5 +1,7 @@
 package com.example.casaretrofit.APIServices;
 
+import android.util.Base64;
+
 import com.example.casaretrofit.Modelos.Casa;
 import com.example.casaretrofit.Modelos.Dispositivos;
 import com.example.casaretrofit.Modelos.Habitacion;
@@ -28,7 +30,6 @@ public class Deserealizar implements JsonDeserializer<Casa> {
     public Casa deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
 
         Gson gson = new Gson();
-
         /*List<Dispositivos> dispositivosList = new ArrayList<>();
         for (int i=0; i<dispositivosList.size(); i++){
             dispositivosList.add(new Dispositivos(
@@ -51,7 +52,8 @@ public class Deserealizar implements JsonDeserializer<Casa> {
         }*/
 
 
-        Type casaType = new TypeToken<ArrayList<Habitacion>>(){}.getType();
+        Type casaType = new TypeToken<ArrayList<Habitacion>>() {
+        }.getType();
         ArrayList<Habitacion> habitacionArrayList = gson.fromJson(json, casaType);
         Casa casa = new Casa(habitacionArrayList);
 

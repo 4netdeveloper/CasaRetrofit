@@ -1,7 +1,5 @@
 package com.example.casaretrofit.APIServices;
 
-import android.util.Base64;
-
 import com.example.casaretrofit.Modelos.Casa;
 
 import retrofit2.Call;
@@ -20,13 +18,17 @@ public interface Manejador {
     @GET("app.php")
     Call<Casa> CasaInfo(@Query("key") String APIKey, @Query("cmd") String info, @Query("p1") String numeroCasa);
 
+    @GET("app.php")
+    Call<String> CasaInfoString(@Query("key") String APIKey, @Query("cmd") String info, @Query("p1") String numeroCasa);
+
+
     //metodo para solicitud en BASE64 con respuesta en objeto STRING
     @GET ("app.php")
     Call<String> casaBase64(@Query("h") String base64);
 
     //metodo para solicitud en BASE64 con respuesta en objeto CASA
     @GET("app.php")
-    Call<Casa> casa64(@Query("h") String base64);
+    Call<String> casa64(@Query("h") String base64);
 
 
 /*

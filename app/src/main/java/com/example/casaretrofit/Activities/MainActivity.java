@@ -8,11 +8,23 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.example.casaretrofit.APIServices.API;
+import com.example.casaretrofit.APIServices.Deserealizar;
 import com.example.casaretrofit.APIServices.Manejador;
 import com.example.casaretrofit.Modelos.Casa;
+import com.example.casaretrofit.Modelos.Habitacion;
 import com.example.casaretrofit.R;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.reflect.TypeToken;
 
-import java.nio.charset.StandardCharsets;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -22,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView textView;
     Casa casa;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,14 +56,14 @@ public class MainActivity extends AppCompatActivity {
         String dataLogin64 = codificar64(dataLogin);
         String casaData64 = codificar64(casaData);
 
-        //String dataLoginDec = decodificar64("dHJ1ZQ==");
-
         //llamado para logueo
-       Call<String> base64Call = manejador.casaBase64(dataLogin64);
+        Call<String> base64Call = manejador.casaBase64(dataLogin64);
         base64Call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 String mensaje = response.body();
+                Log.d("respuestaBruta:", mensaje);
+                String vuelta = decodificar64(mensaje);
             }
 
             @Override
@@ -60,33 +73,35 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //llamado para informacion de la casa
-        /*Call<Casa> casa64 = manejador.casa64(casaData64);
-        casa64.enqueue(new Callback<Casa>() {
-            @Override
-            public void onResponse(Call<Casa> call, Response<Casa> response) {
-                casa = response.body();
-            }
-
-            @Override
-            public void onFailure(Call<Casa> call, Throwable t) {
-                Log.d("Fallo->", t.getMessage());
-            }
-        });*/
-
-      /* loginCall.enqueue(new Callback<String>() {
+        Call<String> casa64 = manejador.casa64(casaData64);
+        casa64.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
-                if(response.isSuccessful()){
-                    String mensaje = decodificar64(response.body());
-                    textView.setText(mensaje);
-                }
+                String devolucion = decodificar64(response.body());
+                casa = deserialize(devolucion);
             }
+
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 Log.d("Fallo->", t.getMessage());
             }
-        }) ;*/
+        });
 
+       /* loginCall.enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful()) {
+                    String mensaje = decodificar64(response.body());
+                    textView.setText(mensaje);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.d("Fallo->", t.getMessage());
+            }
+        });
+*/
         /*casaCall.enqueue(new Callback<Casa>() {
             @Override
             public void onResponse(Call<Casa> call, Response<Casa> response) {
@@ -104,25 +119,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //metodo para tomar los datos para las solicitudes de LOGIN
-    private String setDataLogin(String key, String usr, String nombreUsuario,String password){
-            String mensaje = "key="+key+"&cmd="+usr+"&p1="+nombreUsuario+"&p2="+password;
-            return mensaje;
+    private String setDataLogin(String key, String usr, String nombreUsuario, String password) {
+        String mensaje = "key=" + key + "&cmd=" + usr + "&p1=" + nombreUsuario + "&p2=" + password;
+        return mensaje;
     }
 
     //metodo para tomar los datos para las solicitudes de DATOS DE LA CASA
-    private String setCasaInfo(String key, String cmd, String p1){
-        return "key="+key+"&cmd="+cmd+"&p1="+p1;
+    private String setCasaInfo(String key, String cmd, String p1) {
+        return "key=" + key + "&cmd=" + cmd + "&p1=" + p1;
     }
 
     //metodo para codificar en BASE64
-    private String codificar64(String data){
-        byte [] data64 = data.getBytes();
+    private String codificar64(String data) {
+        byte[] data64 = data.getBytes();
         String base64 = Base64.encodeToString(data64, Base64.DEFAULT);
         return base64;
     }
+
     //metodo para decodificar en BASE64
-    private String decodificar64(String data){
-        byte[] byte64 = Base64.decode(data, Base64.URL_SAFE);
+    private String decodificar64(String data) {
+        byte[] byte64 = Base64.decode(data, Base64.DEFAULT);
         return new String(byte64);
+    }
+
+    //metodo para deserealizar el string con la info de la casa
+    private Casa deserialize(String respose) {
+        Gson gson = new Gson();
+        JsonElement json;
+        json = gson.fromJson(respose, JsonElement.class);
+        Type casaType = new TypeToken<ArrayList<Habitacion>>() {
+        }.getType();
+        ArrayList<Habitacion> habitacionArrayList = gson.fromJson(json, casaType);
+        Casa casa = new Casa(habitacionArrayList);
+
+        return casa;
     }
 }
